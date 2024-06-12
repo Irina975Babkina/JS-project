@@ -167,57 +167,14 @@ welcomeBtnСhange.classList.add("wrapper-welcom__button-change");
 welcomeBtnСhange.textContent =  "No, change user";
 wrapperWelcom.append(welcomeBtnСhange);
 
-const wrapperPeopleInSystem = document.createElement("div");
-wrapperPeopleInSystem.classList.add("wrapper-form");
-main.append(wrapperPeopleInSystem);
-
-const peopleInSystem = document.createElement("p");
-peopleInSystem.classList.add("text");
-peopleInSystem.textContent =  `Welcome! Number of registered system users: ${numberOfUsers} `;
-wrapperPeopleInSystem.append(peopleInSystem);
-
-const peopleInSystemBtn = document.createElement("button");
-peopleInSystemBtn.classList.add("wrapper-welcom__button-ok");
-peopleInSystemBtn.textContent =  "It's cool";
-peopleInSystemBtn.onclick = function(){
-    wrapperWelcom.style.display = "block";
-    wrapperPeopleInSystem.style.display = "none";
-};
-wrapperPeopleInSystem.append(peopleInSystemBtn);
-
 buttonSave.onclick = function() {
     localStorage.setItem("userNameForPizza", JSON.stringify(inputName.value));
     localStorage.setItem("userPasswordForPizza", JSON.stringify(inputPassword.value));
     localStorage.setItem("userAddressPizza", JSON.stringify(inputAddress.value));
     user = inputName.value;
     welcome.textContent =  `Hello my dear friend, ${user}! It's time to eat! Let's find the best option for you.`
-    wrapperPeopleInSystem.style.display = "block";
+    wrapperWelcom.style.display = "block";
     wrapperForm.style.display = "none";
-    
-    database
-        .ref("users/" + `user_${inputName.value.replace(/\s/g,"").toLowerCase()}_${inputPassword.value}`)
-        .set({
-            username: `${inputName.value}`,
-            password: `${inputPassword.value}`,
-            address: `${inputAddress.value}`
-        })
-        .then (function(){
-            console.log("Пользователь добавлен в коллекцию");
-        })
-        .catch(function(){
-            console.error("Ошибка добавления:", error);
-        })
-
-    database
-        .ref("users/")
-        .once("value")
-        .then(function(snapshot){
-            for (key in snapshot.val()) {
-                numberOfUsers ++;
-            }
-            peopleInSystem.textContent =  `Welcome! Number of registered system users: ${numberOfUsers} `;
-        })
-        
 }
 
 if (user) {
@@ -276,11 +233,6 @@ function nextStep(){
     preferences.style.display = "block";
     showAllMenuBtn.style.display = "block";
     showSelectedMenuBtn.style.display = "block";
-    if (previousOrder) {
-        showPreviousOrdersBtn.style.display = "block";
-    } else{
-        showPreviousOrdersBtn.style.display = "none";
-    }
 }
 
 const onePersonImg = document.createElement("img");
@@ -317,7 +269,7 @@ companyImg.addEventListener("click", function(){
     wrapperThreePersons.style.display = "block";
     nextStep();
 });
-//
+
 welcomeBtnOk.onclick = function(){
     wrapperWelcom.style.display = "none";
     wrapperPersons.style.display = "block";
@@ -403,7 +355,6 @@ pepperImg.id = "pepper";
 pepperImg.style.draggable="true";
 pizzaToppings.append(pepperImg);
 
-
 const pineappleImg = document.createElement("img");
 pineappleImg.classList.add("pizza-toppings__img");
 pineappleImg.classList.add("img-small");
@@ -477,12 +428,6 @@ showSelectedMenuBtn.classList.add("selected-menu-btn");
 showSelectedMenuBtn.textContent =  "show selected menu";
 showSelectedMenuBtn.style.display = "none";
 main.append(showSelectedMenuBtn);
-
-const showPreviousOrdersBtn = document.createElement("button");
-showPreviousOrdersBtn.classList.add("previous-orders-btn");
-showPreviousOrdersBtn.textContent =  "show previous orders";
-showPreviousOrdersBtn.style.display = "none";
-main.append(showPreviousOrdersBtn);
 
 const showAllMenuBtn = document.createElement("button");
 showAllMenuBtn.classList.add("all-menu-btn");
@@ -649,8 +594,6 @@ orderBtn.onclick = function(){
     clickSound();
     wrapperСonfirmationOfOrder.style.display = "block";
     modal.classList.remove("modal_open");
-    console.log(pizzaFromOrder);
-    localStorage.setItem("pizzaFromOrder", JSON.stringify(pizzaFromOrder));
 }
 wrapperModalFooter.append(orderBtn);
 
@@ -665,92 +608,6 @@ clearOrderBtn.onclick = function(){
     numberOfPizzas = 0;
 }
 wrapperModalFooter.append(clearOrderBtn);
-
-// отображение пицц из предыдущих заказов
-
-showPreviousOrdersBtn.onclick = function(){
-    event.preventDefault();
-    let pizzaList = document.createElement("div");
-    pizzaList.classList.add("pizzaList");
-    main.append(pizzaList);
-
-    for (let j = 0; j < previousOrder.length; j += 1) {
-        let somePizza = document.createElement("div");
-        somePizza.classList.add("pizza-description");
-        somePizza.addEventListener("click", makeAnOrder);
-        pizzaList.append(somePizza);
-
-        let somePizzaImg = document.createElement("img");
-        somePizzaImg.classList.add("pizza-description__img");
-        somePizzaImg.src = pizzaStorage[previousOrder[j]]["photo"];
-        somePizzaImg.alt = "pizza";
-        somePizza.prepend(somePizzaImg);
-
-        let somePizzaName = document.createElement("p");
-        somePizzaName.classList.add("pizza-description__name");
-        somePizzaName.textContent = previousOrder[j];
-        somePizza.append(somePizzaName);
-
-        let somePizzaIngredients = document.createElement("p");
-        somePizzaIngredients.classList.add("pizza-description__ingredients");
-        somePizzaIngredients.textContent = String(pizzaStorage[previousOrder[j]]["ingredients"]).replace(/,/g,", ");
-        somePizza.append(somePizzaIngredients);
-
-        let somePizzaPrice = document.createElement("p");
-        somePizzaPrice.classList.add("pizza-description__price");
-        somePizzaPrice.textContent = "small (1 lb)" + ": " + pizzaStorage[previousOrder[j]]["price"]["small (1 lb)"] + "; " + "big (2 lb)" + ": " + pizzaStorage[previousOrder[j]]["price"]["big (2 lb)"] ;
-        somePizza.append(somePizzaPrice);
-
-        let somePizzaBtnSm = document.createElement("button");
-        somePizzaBtnSm.classList.add("pizza-description__opder-sm");
-        somePizzaBtnSm.textContent =  "order small";
-        somePizza.append(somePizzaBtnSm);
-
-        let somePizzaBtnBig = document.createElement("button");
-        somePizzaBtnBig.classList.add("pizza-description__opder-big");
-        somePizzaBtnBig.textContent =  "order big";
-        somePizza.append(somePizzaBtnBig);
-
-        function makeAnOrder(event){
-            event.preventDefault();
-            let target = event.target;
-            if (target.textContent ===  "order small"){
-                numberOfPizzas += 1;
-                pizzaFromOrder[numberOfPizzas-1] = previousOrder[j];
-                text = text + previousOrder[j] + ": " + pizzaStorage[previousOrder[j]]["price"]["small (1 lb)"] +"; ";
-                order.textContent = text;
-                sum = sum + Number(pizzaStorage[previousOrder[j]]["price"]["small (1 lb)"]);
-                if (numberOfPizzas == 2) {
-                    totalPayable.textContent = `Total payable: ${sum*0.93}`;
-                } else if (numberOfPizzas >= 5) {
-                    totalPayable.textContent = `Total payable: ${sum*0.85}`;
-                } else {
-                    totalPayable.textContent = `Total payable: ${sum}`;
-                }
-
-                shadow.classList.add("shadow_open");
-                modal.classList.add("modal_open");
-            }
-            if (target.textContent ===  "order big"){
-                numberOfPizzas += 1;
-                pizzaFromOrder[numberOfPizzas-1] = previousOrder[j];
-                text = text + key + ": " + pizzaStorage[previousOrder[j]]["price"]["big (2 lb)"] +"; ";
-                order.textContent = text;
-                sum = sum + Number(pizzaStorage[previousOrder[j]]["price"]["big (2 lb)"]);
-                if (numberOfPizzas == 2) {
-                    totalPayable.textContent = `Total payable: ${sum*0.93}`;
-                } else if (numberOfPizzas >= 5) {
-                    totalPayable.textContent = `Total payable: ${sum*0.85}`;
-                } else {
-                    totalPayable.textContent = `Total payable: ${sum}`;
-                }
-
-                shadow.classList.add("shadow_open");
-                modal.classList.add("modal_open");
-            }
-        }
-    }
-}
 
 // отображение отсортированных пицц
 showSelectedMenuBtn.onclick = function() {
@@ -833,11 +690,12 @@ showSelectedMenuBtn.onclick = function() {
                 order.textContent = text;
                 sum = sum + Number(pizzaStorage[key]["price"]["small (1 lb)"]);
                 if (numberOfPizzas == 2) {
-                    totalPayable.textContent = `Total payable: ${sum*0.93}`;
+                    totalPayable.textContent = `Total payable: ${(sum*0.93).toFixed(2)} Sale 7%`;
                 } else if (numberOfPizzas >= 5) {
-                    totalPayable.textContent = `Total payable: ${sum*0.85}`;
+                    totalPayable.textContent = `Total payable: ${(sum*0.85).toFixed(2)} Sale 15%`;
                 } else {
-                    totalPayable.textContent = `Total payable: ${sum}`;
+                    totalPayable.textContent = `Total payable: ${sum.toFixed(2)}`;
+                    textSale = "";
                 }
 
                 shadow.classList.add("shadow_open");
@@ -850,11 +708,11 @@ showSelectedMenuBtn.onclick = function() {
                 order.textContent = text;
                 sum = sum + Number(pizzaStorage[key]["price"]["big (2 lb)"]);
                 if (numberOfPizzas == 2) {
-                    totalPayable.textContent = `Total payable: ${sum*0.93}`;
+                    totalPayable.textContent = `Total payable: ${(sum*0.93).toFixed(2)} Sale 7%`;
                 } else if (numberOfPizzas >= 5) {
-                    totalPayable.textContent = `Total payable: ${sum*0.85}`;
+                    totalPayable.textContent = `Total payable: ${(sum*0.85).toFixed(2)} Sale 15%`;
                 } else {
-                    totalPayable.textContent = `Total payable: ${sum}`;
+                    totalPayable.textContent = `Total payable: ${sum.toFixed(2)}`;
                 }
 
                 shadow.classList.add("shadow_open");
@@ -924,11 +782,11 @@ showAllMenuBtn.onclick = function(event) {
                 order.textContent = text;
                 sum = sum + Number(pizzaStorage[key]["price"]["small (1 lb)"]);
                 if (numberOfPizzas == 2) {
-                    totalPayable.textContent = `Total payable: ${sum*0.93}`;
+                    totalPayable.textContent = `Total payable: ${(sum*0.93).toFixed(2)} Sale 7%`;
                 } else if (numberOfPizzas >= 5) {
-                    totalPayable.textContent = `Total payable: ${sum*0.85}`;
+                    totalPayable.textContent = `Total payable: ${(sum*0.85).toFixed(2)} Sale 15%`;
                 } else {
-                    totalPayable.textContent = `Total payable: ${sum}`;
+                    totalPayable.textContent = `Total payable: ${sum.toFixed(2)}`;
                 }
 
                 shadow.classList.add("shadow_open");
@@ -941,11 +799,11 @@ showAllMenuBtn.onclick = function(event) {
                 order.textContent = text;
                 sum = sum + Number(pizzaStorage[key]["price"]["big (2 lb)"]);
                 if (numberOfPizzas == 2) {
-                    totalPayable.textContent = `Total payable: ${sum*0.93}`;
+                    totalPayable.textContent = `Total payable: ${(sum*0.93).toFixed(2)} Sale 7%`;
                 } else if (numberOfPizzas >= 5) {
-                    totalPayable.textContent = `Total payable: ${sum*0.85}`;
+                    totalPayable.textContent = `Total payable: ${(sum*0.85).toFixed(2)} Sale 15%`;
                 } else {
-                    totalPayable.textContent = `Total payable: ${sum}`;
+                    totalPayable.textContent = `Total payable: ${sum.toFixed(2)}`;
                 }
 
                 shadow.classList.add("shadow_open");
